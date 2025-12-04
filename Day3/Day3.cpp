@@ -1,10 +1,13 @@
 // Day3.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// https://adventofcode.com/2025/day/3
 
 #include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
+#include <assert.h>
+
+constexpr bool IS_PART2 = false;
 
 std::vector<std::string> readFileLines(const char* filename)
 {
@@ -26,39 +29,37 @@ std::vector<std::string> readFileLines(const char* filename)
 int main()
 {
     uint64_t sumOfNumbers = 0;
+    constexpr int numDigits = (IS_PART2) ? 12 : 2;
+
 	auto lines = readFileLines("Data\\Input.txt");
     for (const auto& line : lines)
     {
-		//we are trying to find the the largest two digit number that appears in the line
-		//lets try to first find the largest digit (starting from left going to end-1), and from that position we can look for the next largest digit in the rest of the line
-		char largestFirstDigit = '0';
-		int positionOfLargestFirstDigit = -1;
-        for (int i = 0; i < line.size() - 1; ++i)
+		//we are trying to find the the largest number with "numDigits" digits that appears in the line, without changing the order of numbers
+        //for this we want to loop over the input digit string and we are looking for the largest number in the first x numbers, where x it NumOfDigits - "numDigits"
+        size_t currentStartPos = 0;
+        std::string solution;
+
+        for (size_t currentDigitPos = 0; currentDigitPos < numDigits; ++currentDigitPos)
         {
-            if (line[i] > largestFirstDigit)
+            char largestCurrentDigit = '0';
+            for (size_t i = currentStartPos; i < line.size() - numDigits + currentDigitPos + 1; ++i)
             {
-                positionOfLargestFirstDigit = i;
-                largestFirstDigit = line[i];
-                //if we found a 9, we cannot do better, so we can stop searching
-                if (largestFirstDigit == '9')
-                    break;
+                if (line[i] > largestCurrentDigit)
+                {
+                    currentStartPos = i + 1;
+                    largestCurrentDigit = line[i];
+                    //if we found a 9, we cannot do better, so we can stop searching
+                    if (largestCurrentDigit == '9')
+                        break;
+                }
             }
+            solution += largestCurrentDigit;
         }
-		//now we have the largest first digit, we can look for the largest second digit in the rest of the line
-        char largestSecondDigit = '0';
-        for (int j = positionOfLargestFirstDigit + 1; j < line.size(); ++j)
-        {
-            if (line[j] > largestSecondDigit)
-            {
-                largestSecondDigit = line[j];
-                //if we found a 9, we cannot do better, so we can stop searching
-                if (largestSecondDigit == '9')
-                    break;
-            }
-		}
-		std::cout << "Line: " << line << " -> Largest two digit number: " << largestFirstDigit << largestSecondDigit << std::endl;
+
+        std::cout << "Line: " << line << " -> largest " << numDigits << "digit number: " << solution << "\n";
+        assert(sumOfNumbers < UINT64_MAX - std::stoull(solution));
         //add the found number to our sum
-        sumOfNumbers += (largestFirstDigit - '0') * 10 + (largestSecondDigit - '0');
+        sumOfNumbers += std::stoull(solution);
     }
     std::cout << "Sum: " << sumOfNumbers;
 	return 0;

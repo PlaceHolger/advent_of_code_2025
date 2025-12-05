@@ -7,6 +7,8 @@
 #include <fstream>
 #include <assert.h>
 
+constexpr bool IS_PART2 = false;
+
 std::vector<std::string> readFileLines(const char* filename)
 {
     std::vector<std::string> lines;
@@ -24,14 +26,12 @@ std::vector<std::string> readFileLines(const char* filename)
     return lines;
 }
 
-int main()
+int FindNumberOfReachableRolls(std::vector<std::string>& inputLines, bool removeRolls = true)
 {
-	auto inputLines = readFileLines("Data\\Input.txt");
-
-	unsigned numReachableRolls = 0;
+    unsigned numReachableRolls = 0;
 
     // okay, we want to find in everyline the '@' that by less than 4 adjacent '@' characters
-	// our first approach is to loop over every character in the line, and for every '@' we find, we check the 8 adjacent characters (and keep the border cases in mind)
+    // our first approach is to loop over every character in the line, and for every '@' we find, we check the 8 adjacent characters (and keep the border cases in mind)
     for (int iLine = 0; iLine < inputLines.size(); ++iLine)
     {
         for (int iChar = 0; iChar < inputLines[iLine].size(); ++iChar)
@@ -62,12 +62,34 @@ int main()
                 }
                 if (adjacentAtCount < 4)
                 {
+                    if(removeRolls)
+						inputLines[iLine][iChar] = 'x';  // mark as removed when the part was reachable
                     //std::cout << "Found '@' at line " << iLine << ", char " << iChar << " with only " << adjacentAtCount << " adjacent '@' characters.\n";
                     numReachableRolls++;
                 }
             }
         }
     }
+    return numReachableRolls;
+}
 
-	std::cout << "Number of reachable rolls: " << numReachableRolls << "\n";
+int main()
+{
+    auto inputLines = readFileLines("Data\\Input.txt");
+
+	int totalReachableRolls = 0;
+
+    int numReachableRolls = FindNumberOfReachableRolls(inputLines, IS_PART2);
+    totalReachableRolls += numReachableRolls;
+
+    if (IS_PART2)
+    {
+        while (numReachableRolls > 0)
+        {
+            numReachableRolls = FindNumberOfReachableRolls(inputLines, true);
+            totalReachableRolls += numReachableRolls;
+        }
+    }
+
+	std::cout << "Number of reachable rolls: " << totalReachableRolls << "\n";
 }

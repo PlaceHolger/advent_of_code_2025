@@ -7,7 +7,7 @@
 #include <fstream>
 #include <assert.h>
 
-constexpr bool IS_PART2 = false;
+constexpr bool IS_PART2 = true;
 
 std::vector<std::string> readFileLines(const char* filename)
 {
@@ -26,45 +26,49 @@ std::vector<std::string> readFileLines(const char* filename)
     return lines;
 }
 
-int FindNumberOfReachableRolls(std::vector<std::string>& inputLines, bool removeRolls = true)
+void addBorder(std::vector<std::string>& inputLines)
+{
+    size_t width = inputLines[0].size();
+
+    // Add border characters to each existing line
+    for (auto& line : inputLines)
+    {
+        line = '.' + line + '.';
+        line.shrink_to_fit();
+    }
+
+    // Add top and bottom border lines
+    std::string borderLine(width + 2, '.');
+    inputLines.insert(inputLines.begin(), borderLine);
+    inputLines.push_back(borderLine);
+	inputLines.shrink_to_fit();
+}
+
+unsigned FindNumberOfReachableRolls(std::vector<std::string>& inputLines, bool removeRolls = true)
 {
     unsigned numReachableRolls = 0;
+	constexpr int THRESHOLD = 4 * '@' + 4 * '.'; // 4*64 + 4*46 = 440, we sum the ASCII values of the neighbours, if the sum is less than this threshold, at least 4 of the 8 neighbours are '.'
 
-    // okay, we want to find in everyline the '@' that by less than 4 adjacent '@' characters
-    // our first approach is to loop over every character in the line, and for every '@' we find, we check the 8 adjacent characters (and keep the border cases in mind)
-    for (int iLine = 0; iLine < inputLines.size(); ++iLine)
+    // Loop from 1 to size-1 to skip the border
+    for (size_t iLine = 1; iLine < inputLines.size() - 1; ++iLine)
     {
-        for (int iChar = 0; iChar < inputLines[iLine].size(); ++iChar)
+        const std::string& prevLine = inputLines[iLine - 1];
+        const std::string& currLine = inputLines[iLine];
+        const std::string& nextLine = inputLines[iLine + 1];
+        
+        for (size_t iChar = 1; iChar < currLine.size() - 1; ++iChar)
         {
-            if (inputLines[iLine][iChar] == '@')
+            if (currLine[iChar] == '@')
             {
-                int adjacentAtCount = 0;
-                //check the 8 adjacent characters
-                for (int deltaLine = -1; deltaLine <= 1; ++deltaLine)
+                const int neighbourSum =
+                    prevLine[iChar - 1] + prevLine[iChar] + prevLine[iChar + 1] +
+                    currLine[iChar - 1]                   + currLine[iChar + 1] +
+                    nextLine[iChar - 1] + nextLine[iChar] + nextLine[iChar + 1];
+
+                if (neighbourSum < THRESHOLD)
                 {
-                    for (int deltaChar = -1; deltaChar <= 1; ++deltaChar)
-                    {
-                        //skip the center character
-                        if (deltaLine == 0 && deltaChar == 0)
-                            continue;
-                        int checkLine = iLine + deltaLine;
-                        int checkChar = iChar + deltaChar;
-                        //check bounds
-                        if (checkLine >= 0 && checkLine < inputLines.size() &&
-                            checkChar >= 0 && checkChar < inputLines[checkLine].size())
-                        {
-                            if (inputLines[checkLine][checkChar] == '@')
-                            {
-                                ++adjacentAtCount;
-                            }
-                        }
-                    }
-                }
-                if (adjacentAtCount < 4)
-                {
-                    if(removeRolls)
-						inputLines[iLine][iChar] = 'x';  // mark as removed when the part was reachable
-                    //std::cout << "Found '@' at line " << iLine << ", char " << iChar << " with only " << adjacentAtCount << " adjacent '@' characters.\n";
+                    if (removeRolls)
+                        inputLines[iLine][iChar] = '.';
                     numReachableRolls++;
                 }
             }
@@ -75,11 +79,14 @@ int FindNumberOfReachableRolls(std::vector<std::string>& inputLines, bool remove
 
 int main()
 {
+    //auto start = std::chrono::high_resolution_clock::now();
     auto inputLines = readFileLines("Data\\Input.txt");
+	//we add a border of '.' around the input to avoid checking for out of bounds
+    addBorder(inputLines);
 
-	int totalReachableRolls = 0;
+    unsigned totalReachableRolls = 0;
 
-    int numReachableRolls = FindNumberOfReachableRolls(inputLines, IS_PART2);
+    unsigned numReachableRolls = FindNumberOfReachableRolls(inputLines, IS_PART2);
     totalReachableRolls += numReachableRolls;
 
     if (IS_PART2)
@@ -91,5 +98,9 @@ int main()
         }
     }
 
-	std::cout << "Number of reachable rolls: " << totalReachableRolls << "\n";
+    std::cout << "Number of reachable rolls: " << totalReachableRolls << "\n";
+
+    //auto end = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration<double> elapsed = end - start;
+    //std::cout << "Execution time: " << elapsed.count() << " seconds\n";
 }

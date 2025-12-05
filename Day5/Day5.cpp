@@ -10,6 +10,8 @@
 #include <assert.h>
 #include <algorithm>
 
+constexpr bool IS_PART2 = true;
+
 struct Range {
     uint64_t start, end;
 };
@@ -18,7 +20,6 @@ struct InputData {
     std::vector<Range> ranges;
     std::vector<uint64_t> ingredientIDs;
 };
-
 
 InputData readInputFile(const std::string& filename)
 {
@@ -86,7 +87,7 @@ void optimizeRanges(std::vector<Range>& ranges)
     for (size_t i = 1; i < ranges.size(); ++i)
     {
         Range& last = optimized.back();
-        if (ranges[i].start < last.end) // Overlapping or contiguous ranges
+        if (ranges[i].start <= last.end + 1) // Overlapping or contiguous ranges
         {
             last.end = std::max(last.end, ranges[i].end);
         }
@@ -104,22 +105,36 @@ int main()
 	
     optimizeRanges(inputData.ranges);
 
-    unsigned numFreshIngredients = 0;
-    //now we just iterate over all ingredients and check if these are in one of the ranges
-    for (const auto& ingredientID : inputData.ingredientIDs)
+    if (!IS_PART2)
     {
-        for (const auto& range : inputData.ranges)
+        unsigned numFreshIngredients = 0;
+        //now we just iterate over all ingredients and check if these are in one of the ranges
+        for (const auto& ingredientID : inputData.ingredientIDs)
         {
-            if (ingredientID <= range.end)
+            for (const auto& range : inputData.ranges)
             {
-                if (ingredientID >= range.start)
-                    ++numFreshIngredients;
-				break; // No need to check further ranges, since ranges are sorted
+                if (ingredientID <= range.end)
+                {
+                    if (ingredientID >= range.start)
+                        ++numFreshIngredients;
+                    break; // No need to check further ranges, since ranges are sorted
+                }
             }
         }
+        std::cout << "Number of fresh ingredients: " << numFreshIngredients << "\n";
     }
-
-	std::cout << "Number of fresh ingredients: " << numFreshIngredients << "\n";
+    else
+    { 
+		//we want to find the numbers of ingredients that are within any of the ranges
+		//We can tehrefore ignore ingredientIDs, and just sum up the sizes of the ranges
+        uint64_t totalFreshIngredients = 0;
+        for (const auto& range : inputData.ranges)
+        {
+            uint64_t rangeSize = range.end - range.start + 1;
+            totalFreshIngredients += rangeSize;
+        }
+		std::cout << "Total number of fresh ingredients in all ranges: " << totalFreshIngredients << "\n";
+    }
 
 	return 0;
 }

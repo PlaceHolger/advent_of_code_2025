@@ -6,4 +6,5 @@
   <Project Path="Day1/AdventOfCodeDay1.vcxproj" Id="7c7bec41-fdc7-4f9d-946b-5563ed7fe5e9" />
   <Project Path="Day2/Day2.vcxproj" Id="14d6c2dd-a0ea-48fb-869a-a775d9c4d9e5" />
   <Project Path="Day3/Day3.vcxproj" Id="ee6be15c-46cf-4a8b-9e0f-fe8adcad180a" />
+  <Project Path="Day4/Day4.vcxproj" Id="fc044aa8-6fd4-4aa3-9c15-bdbae8b63842" />
 </Solution>

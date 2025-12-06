@@ -1,5 +1,5 @@
 // Day6.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// https://adventofcode.com/2025/day/6
 
 #include <iostream>
 #include <fstream>
@@ -9,12 +9,16 @@
 #include <cctype>
 #include <assert.h>
 
+#define PART2 true
+
 struct Problem
 {
     std::vector<unsigned int> numbers;
-    char operation;
+    char operation = 'X';
 };
 
+
+#if !defined(PART2)
 std::vector<Problem> parseProblems(const std::string& filename)
 {
     std::vector<Problem> problems;
@@ -54,8 +58,8 @@ std::vector<Problem> parseProblems(const std::string& filename)
         }
     }
 
+    problems.resize(rows[0].size()); //each column is a problem
     // Combine rows and operations into Problems 
-	problems.resize(rows[0].size()); //each column is a problem
     for (size_t col = 0; col < rows[0].size(); ++col)
     {
         Problem prob;
@@ -65,9 +69,81 @@ std::vector<Problem> parseProblems(const std::string& filename)
         }
         prob.operation = operations[col];
         problems[col] = prob;
-	}
+    }
+
     return problems;
 }
+#else
+std::vector<Problem> parseProblems(const std::string& filename)
+{
+	//the parsing here is special, every column is a number, Whenever we find a column where every line has ' ' we have a new problem (seperator column)
+    std::vector<Problem> problems;
+
+    std::ifstream file(filename);
+    if (!file)
+    {
+        std::cerr << "Cannot open file: " << filename << std::endl;
+        return problems;
+    }
+
+    // Read all lines
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(file, line))
+        lines.push_back(line);
+    if (lines.size() < 2)
+        return problems;
+
+	//check all lines have the same length
+    size_t lineLength = lines[0].size();
+    for (const auto& l : lines)
+        assert(l.size() == lineLength && "All lines must have the same length");
+
+	//now we split the lines into problems, whenever we find a column where every line has ' ' we have a new problem    
+	Problem currentProblem;
+    std::string currentColumnNumber;
+    for (size_t col = 0; col < lines[0].size(); ++col)
+    {
+        bool isSeparator = true;
+        for (size_t row = 0; row < lines.size(); ++row)
+        {
+            if (lines[row][col] != ' ')
+            {
+                isSeparator = false;
+                break;
+            }
+        }
+        if (isSeparator)
+        {
+			problems.push_back(currentProblem);
+			assert(!currentProblem.numbers.empty() && currentProblem.operation != 'X' && "Problem cannot be empty");
+			currentProblem.numbers.clear();
+			currentProblem.operation = 'X';
+            continue;
+        }
+        //not a separator, add numbers to current problem
+        currentColumnNumber.clear();
+        for (size_t row = 0; row < lines.size() - 1; ++row) //last line is operations
+        {
+            if (std::isdigit(lines[row][col]))
+            {
+                currentColumnNumber += lines[row][col];
+            }
+        }
+		//convert to number and add to current problem
+		currentProblem.numbers.push_back(std::stoul(currentColumnNumber));
+
+        //add operation from last line
+        char op = lines[lines.size() - 1][col];
+        if(op == '*' || op == '+')
+            currentProblem.operation = op;
+    }
+	problems.push_back(currentProblem); //add last problem
+
+	return problems;
+
+}
+#endif
 
 
 int main()

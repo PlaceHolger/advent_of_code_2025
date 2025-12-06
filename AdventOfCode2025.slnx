@@ -8,4 +8,5 @@
   <Project Path="Day3/Day3.vcxproj" Id="ee6be15c-46cf-4a8b-9e0f-fe8adcad180a" />
   <Project Path="Day4/Day4.vcxproj" Id="fc044aa8-6fd4-4aa3-9c15-bdbae8b63842" />
   <Project Path="Day5/Day5.vcxproj" Id="a4e765b9-e2a3-4f18-be0c-fa6db5e4fdcd" />
+  <Project Path="Day6/Day6.vcxproj" Id="2d0a0049-91cd-4da0-972d-aebb28de3ae1" />
 </Solution>

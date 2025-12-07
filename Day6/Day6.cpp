@@ -115,10 +115,11 @@ std::vector<Problem> parseProblems(const std::string& filename)
         }
         if (isSeparator)
         {
-			problems.push_back(currentProblem);
-			assert(!currentProblem.numbers.empty() && currentProblem.operation != 'X' && "Problem cannot be empty");
-			currentProblem.numbers.clear();
-			currentProblem.operation = 'X';
+            assert(!currentProblem.numbers.empty() && currentProblem.operation != 'X' && "Problem cannot be empty");
+            // Add a new problem directly to the vector
+            problems.push_back(std::move(currentProblem));
+            // Start a new problem
+            currentProblem = Problem(); // Reset currentProblem to a default state
             continue;
         }
         //not a separator, add numbers to current problem

@@ -105,6 +105,8 @@ std::vector<Edge> generate_edges(const std::vector<Point>& points)
     return edges;
 }
 
+#define IS_PART2 true
+
 int main() {
     auto points = parse_points("Data//Input.txt");
     std::cout << "Parsed " << points.size() << " points\n";
@@ -121,8 +123,19 @@ int main() {
         //std::cout << "Considering edge between point " << points[edge.u].x << "," << points[edge.u].y << "," << points[edge.u].z << " and point " << points[edge.v].x << "," << points[edge.v].y << "," << points[edge.v].z << "\n";
         uf.unite(edge.u, edge.v);  //we dont care if they were already connected
             
+#if !defined IS_PART2
         if (++connected == NUM_EDGES_TO_CONNECT)
             break;
+#else
+        if (uf.get_size(edge.u) >= points.size()) //all points are connected
+        {
+			std::cout << "All points connected after connecting " << points[edge.u].x << "," << points[edge.u].y << "," << points[edge.u].z << " and point " << points[edge.v].x << "," << points[edge.v].y << "," << points[edge.v].z << "\n";
+			std::cout << "Part2 - Product of their x coordinates: " << (uint64_t)points[edge.u].x * points[edge.v].x << "\n";
+            return 0;
+        }
+#endif
+
+
     }
 
     // Find 3 largest components
